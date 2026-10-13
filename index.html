@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="NPLEY × SPEP AI 영어 학습 앱 UX/UI 디자인 & 퍼블리싱 제안서">
+<meta property="og:title" content="NPLEY × SPEP 제안서">
+<meta property="og:description" content="SPEP AI 영어 학습 앱 UX/UI 디자인 & 퍼블리싱 제안">
+<meta property="og:image" content="assets/thumb-01.webp">
+<title>NPLEY × SPEP 제안서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: letterboxed 16:9 stage on black; each slide = base image + live header layers animated by GSAP */
+:root{
+  --bg:#050505; --chrome:#111111; --line:#262626; --fg:#f2f2f2; --muted:#8a8a8a; --accent:#E8613A;
+  --ui:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
+.app{height:100%;display:grid;grid-template-rows:1fr auto;padding-inline:16px;box-sizing:border-box}
+.stage-wrap{display:grid;place-items:center;min-height:0;padding-block:16px 10px}
+.stage{position:relative;width:min(100%, calc((100vh - 96px) * 16 / 9));aspect-ratio:16/9;max-width:100%;background:#000;overflow:hidden;
+  box-shadow:0 0 0 1px var(--line);touch-action:pan-y;cursor:pointer;user-select:none;-webkit-user-select:none}
+.sl{position:absolute;inset:0;visibility:hidden}
+.sl img{display:block;pointer-events:none;-webkit-user-drag:none}
+.base{position:absolute;inset:0;width:100%;height:100%;will-change:transform,opacity}
+.ly{position:absolute;will-change:transform,opacity}
+.ly>img{width:100%;height:100%}
+.mask{position:absolute;left:0;width:100%;overflow:hidden}
+.inner{position:absolute;inset:0;will-change:transform}
+.inner>img{position:absolute;left:0;width:100%}
+
+.bar{display:flex;align-items:center;gap:14px;padding-block:10px 14px;max-width:calc((100vh - 96px) * 16 / 9);width:100%;margin-inline:auto;box-sizing:border-box}
+.count{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.count b{color:var(--fg);font-weight:500}
+.meta{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;overflow:hidden;height:36px;justify-content:center}
+.chap{font-size:11px;letter-spacing:.08em;color:var(--accent);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{position:relative;height:2px;background:var(--line);flex:2;min-width:60px}
+.track i{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent)}
+.btns{display:flex;gap:6px}
+button{font:inherit;color:var(--fg);background:var(--chrome);border:1px solid var(--line);height:34px;min-width:34px;padding:0 10px;border-radius:6px;cursor:pointer;display:inline-grid;place-items:center;font-size:13px}
+button:hover{border-color:#444}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+.grid{position:fixed;inset:0;background:rgba(5,5,5,.96);z-index:10;overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.grid-head{max-width:1200px;margin:0 auto 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.grid-head h2{margin:0;font-size:16px;font-weight:700}
+.grid-list{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.thumb{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.thumb img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;box-shadow:0 0 0 1px var(--line);transition:box-shadow .2s}
+.thumb:hover img,.thumb:focus-visible img,.thumb.on img{box-shadow:0 0 0 2px var(--accent)}
+.thumb span{font-size:12px;color:var(--muted);display:flex;gap:8px}
+.thumb span em{font-style:normal;font-family:var(--mono);color:var(--fg)}
+.hint{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--fg)}
+@media (max-width:640px){.track,.hint-k{display:none}.name{font-size:13px}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="stage-wrap">
+    <div class="stage" id="stage" aria-roledescription="carousel" aria-label="제안서 슬라이드" tabindex="0"></div>
+  </div>
+  <div class="bar">
+    <div class="count"><b id="cur">01</b> / <span id="tot">12</span></div>
+    <div class="meta"><div class="chap" id="chap"></div><div class="name" id="name"></div></div>
+    <div class="track" aria-hidden="true"><i id="prog"></i></div>
+    <div class="btns">
+      <button id="prev" aria-label="이전 장"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button id="next" aria-label="다음 장"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button id="gridBtn" aria-label="전체 장표 보기"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg></button>
+      <button id="fsBtn" aria-label="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div class="grid" id="grid" hidden>
+  <div class="grid-head">
+    <h2>전체 장표</h2>
+    <span class="hint"><span class="hint-k"><kbd>←</kbd> <kbd>→</kbd> 넘기기 · <kbd>G</kbd> 전체 보기 · <kbd>F</kbd> 전체 화면</span><button id="gridClose">닫기</button></span>
+  </div>
+  <div class="grid-list" id="gridList"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+const SLIDES=[{"c": "표지", "t": "NPLEY × SPEP", "base": "assets/base-01.webp", "thumb": "assets/thumb-01.webp", "layers": [{"k": "bg", "src": "assets/bg-01-1.webp", "x": 144, "y": 0, "w": 2305, "h": 442, "lines": []}, {"k": "eye", "src": "assets/eye-01-1.webp", "x": 145, "y": 150, "w": 320, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-01-1.webp", "x": 151, "y": 225, "w": 2221, "h": 398, "lines": [[0, 199.0], [199.0, 199.0]]}]}, {"c": "회사 소개", "t": "NPLEY Way", "base": "assets/base-02.webp", "thumb": "assets/thumb-02.webp", "layers": [{"k": "bg", "src": "assets/bg-02-1.webp", "x": 112, "y": 75, "w": 1238, "h": 230, "lines": []}, {"k": "eye", "src": "assets/eye-02-1.webp", "x": 144, "y": 152, "w": 398, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-02-1.webp", "x": 146, "y": 219, "w": 411, "h": 72, "lines": []}, {"k": "title", "src": "assets/title-02-2.webp", "x": 146, "y": 323, "w": 415, "h": 72, "lines": []}, {"k": "title", "src": "assets/title-02-3.webp", "x": 150, "y": 427, "w": 612, "h": 72, "lines": []}, {"k": "desc", "src": "assets/desc-02-1.webp", "x": 1685, "y": 431, "w": 730, "h": 113, "lines": []}]}, {"c": "회사 소개", "t": "Why NPLEY", "base": "assets/base-03.webp", "thumb": "assets/thumb-03.webp", "layers": [{"k": "bg", "src": "assets/bg-03-1.webp", "x": 101, "y": 90, "w": 1603, "h": 272, "lines": []}, {"k": "eye", "src": "assets/eye-03-1.webp", "x": 144, "y": 354, "w": 173, "h": 18, "lines": []}, {"k": "title", "src": "assets/title-03-1.webp", "x": 146, "y": 417, "w": 1633, "h": 220, "lines": [[0, 111.0], [111.0, 109.0]]}]}, {"c": "회사 소개", "t": "프로젝트 레퍼런스", "base": "assets/base-04.webp", "thumb": "assets/thumb-04.webp", "layers": [{"k": "bg", "src": "assets/bg-04-1.webp", "x": 134, "y": 95, "w": 1110, "h": 287, "lines": []}, {"k": "eye", "src": "assets/eye-04-1.webp", "x": 145, "y": 310, "w": 256, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-04-1.webp", "x": 147, "y": 367, "w": 1012, "h": 72, "lines": []}, {"k": "desc", "src": "assets/desc-04-1.webp", "x": 1781, "y": 284, "w": 633, "h": 124, "lines": []}]}, {"c": "제안 목표", "t": "프로젝트 이해", "base": "assets/base-05.webp", "thumb": "assets/thumb-05.webp", "layers": [{"k": "bg", "src": "assets/bg-05-1.webp", "x": 134, "y": 110, "w": 746, "h": 215, "lines": []}, {"k": "eye", "src": "assets/eye-05-1.webp", "x": 145, "y": 310, "w": 393, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-05-1.webp", "x": 146, "y": 368, "w": 717, "h": 264, "lines": [[0, 84.0], [84.0, 96.0], [180.0, 84.0]]}]}, {"c": "제안 목표", "t": "기존 앱 분석", "base": "assets/base-06.webp", "thumb": "assets/thumb-06.webp", "layers": [{"k": "bg", "src": "assets/bg-06-1.webp", "x": 128, "y": 139, "w": 904, "h": 290, "lines": []}, {"k": "eye", "src": "assets/eye-06-1.webp", "x": 145, "y": 308, "w": 323, "h": 23, "lines": []}, {"k": "title", "src": "assets/title-06-1.webp", "x": 146, "y": 368, "w": 853, "h": 168, "lines": [[0, 84.0], [84.0, 84.0]]}, {"k": "desc", "src": "assets/desc-06-1.webp", "x": 1868, "y": 380, "w": 548, "h": 120, "lines": []}]}, {"c": "제안 목표", "t": "AI 어학앱 × 디자인 컨설팅", "base": "assets/base-07.webp", "thumb": "assets/thumb-07.webp", "layers": [{"k": "bg", "src": "assets/bg-07-1.webp", "x": 134, "y": 154, "w": 661, "h": 215, "lines": []}, {"k": "eye", "src": "assets/eye-07-1.webp", "x": 145, "y": 310, "w": 616, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-07-1.webp", "x": 144, "y": 368, "w": 1056, "h": 168, "lines": [[0, 84.0], [84.0, 84.0]]}, {"k": "desc", "src": "assets/desc-07-1.webp", "x": 1406, "y": 380, "w": 1008, "h": 120, "lines": []}]}, {"c": "제안 목표", "t": "우리가 이해한 과제", "base": "assets/base-08.webp", "thumb": "assets/thumb-08.webp", "layers": [{"k": "bg", "src": "assets/bg-08-1.webp", "x": 134, "y": 139, "w": 995, "h": 290, "lines": []}, {"k": "eye", "src": "assets/eye-08-1.webp", "x": 145, "y": 310, "w": 319, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-08-1.webp", "x": 144, "y": 368, "w": 871, "h": 168, "lines": [[0, 84.0], [84.0, 84.0]]}]}, {"c": "목표 레퍼런스", "t": "레퍼런스 매핑", "base": "assets/base-09.webp", "thumb": "assets/thumb-09.webp", "layers": [{"k": "bg", "src": "assets/bg-09-1.webp", "x": 134, "y": 144, "w": 1443, "h": 225, "lines": []}, {"k": "eye", "src": "assets/eye-09-1.webp", "x": 145, "y": 310, "w": 237, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-09-1.webp", "x": 146, "y": 367, "w": 987, "h": 168, "lines": [[0, 85.0], [85.0, 83.0]]}, {"k": "desc", "src": "assets/desc-09-1.webp", "x": 1891, "y": 428, "w": 524, "h": 73, "lines": []}]}, {"c": "해결 과제 샘플", "t": "와이어프레임 상세", "base": "assets/base-10.webp", "thumb": "assets/thumb-10.webp", "layers": [{"k": "bg", "src": "assets/bg-10-1.webp", "x": 134, "y": 151, "w": 808, "h": 218, "lines": []}, {"k": "eye", "src": "assets/eye-10-1.webp", "x": 145, "y": 310, "w": 506, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-10-1.webp", "x": 145, "y": 368, "w": 699, "h": 168, "lines": [[0, 84.0], [84.0, 84.0]]}]}, {"c": "추진 일정 · 방향", "t": "2 Track 수행 방안", "base": "assets/base-11.webp", "thumb": "assets/thumb-11.webp", "layers": [{"k": "bg", "src": "assets/bg-11-1.webp", "x": 131, "y": 107, "w": 996, "h": 218, "lines": []}, {"k": "eye", "src": "assets/eye-11-1.webp", "x": 145, "y": 310, "w": 309, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-11-1.webp", "x": 148, "y": 368, "w": 936, "h": 72, "lines": []}, {"k": "arrow", "src": "assets/arrow-11-1.webp", "x": 1094, "y": 360, "w": 88, "h": 88, "lines": []}]}, {"c": "추진 일정 · 방향", "t": "일정(안)", "base": "assets/base-12.webp", "thumb": "assets/thumb-12.webp", "layers": [{"k": "bg", "src": "assets/bg-12-1.webp", "x": 128, "y": 107, "w": 1270, "h": 218, "lines": []}, {"k": "eye", "src": "assets/eye-12-1.webp", "x": 145, "y": 310, "w": 269, "h": 19, "lines": []}, {"k": "title", "src": "assets/title-12-1.webp", "x": 145, "y": 368, "w": 1003, "h": 72, "lines": []}, {"k": "arrow", "src": "assets/arrow-12-1.webp", "x": 1158, "y": 360, "w": 88, "h": 88, "lines": []}]}];
+const W=2560,H=1440,$=id=>document.getElementById(id),pad=n=>String(n).padStart(2,'0');
+const stage=$('stage');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pc=(v,t)=>(v/t*100)+'%';
+$('tot').textContent=pad(SLIDES.length);
+
+// build slides
+const S=SLIDES.map((s,i)=>{
+  const sec=document.createElement('section');sec.className='sl';sec.setAttribute('aria-label',`${pad(i+1)} ${s.t}`);
+  const base=new Image();base.className='base';base.src=s.base;base.alt='';base.decoding='async';sec.appendChild(base);
+  const parts={bg:[],eye:[],title:[],desc:[],arrow:[]};
+  s.layers.forEach(l=>{
+    const d=document.createElement('div');d.className='ly';
+    Object.assign(d.style,{left:pc(l.x,W),top:pc(l.y,H),width:pc(l.w,W),height:pc(l.h,H)});
+    if(l.k==='title'){
+      const lines=l.lines.length?l.lines:[[0,l.h]];
+      lines.forEach(([t,hh])=>{
+        const m=document.createElement('div');m.className='mask';m.style.top=pc(t,l.h);m.style.height=pc(hh,l.h);
+        const inn=document.createElement('div');inn.className='inner';
+        const im=new Image();im.src=l.src;im.alt='';im.style.top=pc(-t,hh);im.style.height=pc(l.h,hh);
+        inn.appendChild(im);m.appendChild(inn);d.appendChild(m);parts.title.push(inn);
+      });
+    }else{const im=new Image();im.src=l.src;im.alt='';d.appendChild(im);parts[l.k].push(d);}
+    sec.appendChild(d);
+  });
+  stage.appendChild(sec);return {sec,base,...parts};
+});
+
+let idx=-1,tl=null;
+function meta(i){
+  $('cur').textContent=pad(i+1);
+  gsap.to('#prog',{width:((i+1)/SLIDES.length*100)+'%',duration:reduce?0:.8,ease:'power3.out'});
+  const m=[$('chap'),$('name')];
+  const set=()=>{$('chap').textContent=SLIDES[i].c;$('name').textContent=SLIDES[i].t;};
+  if(reduce||idx<0){set();}
+  else gsap.timeline().to(m,{yPercent:-60,autoAlpha:0,duration:.22,ease:'power2.in',stagger:.03,onComplete:set})
+    .fromTo(m,{yPercent:60},{yPercent:0,autoAlpha:1,duration:.5,ease:'power3.out',stagger:.05});
+  try{history.replaceState(null,'','#s'+(i+1))}catch(e){}
+  document.querySelectorAll('.thumb').forEach((t,k)=>t.classList.toggle('on',k===i));
+}
+
+function enter(s,dir,at,t){
+  t.set(s.sec,{visibility:'visible',zIndex:2},at)
+   .fromTo(s.base,{autoAlpha:0,scale:1.025},{autoAlpha:1,scale:1,duration:1.1,ease:'power2.out'},at)
+   .fromTo(s.bg,{autoAlpha:0,xPercent:6*dir},{autoAlpha:1,xPercent:0,duration:1.6,ease:'expo.out'},at+.1)
+   .fromTo(s.eye,{autoAlpha:0,y:'0.9vh'},{autoAlpha:1,y:0,duration:.7,ease:'power3.out'},at+.2)
+   .fromTo(s.title,{yPercent:112},{yPercent:0,duration:1.05,ease:'expo.out',stagger:.09},at+.26)
+   .fromTo(s.arrow,{autoAlpha:0,xPercent:-40,yPercent:40},{autoAlpha:1,xPercent:0,yPercent:0,duration:.8,ease:'expo.out'},at+.6)
+   .fromTo(s.desc,{autoAlpha:0,y:'1vh'},{autoAlpha:1,y:0,duration:.8,ease:'power3.out',stagger:.06},at+.45);
+}
+function leave(s,dir,t){
+  t.set(s.sec,{zIndex:1},0)
+   .to(s.title,{yPercent:-112,duration:.42,ease:'power3.in',stagger:.035},0)
+   .to([...s.eye,...s.desc,...s.arrow],{autoAlpha:0,y:'-0.8vh',duration:.3,ease:'power2.in'},0)
+   .to(s.bg,{autoAlpha:0,xPercent:-4*dir,duration:.5,ease:'power2.in'},0)
+   .to(s.base,{autoAlpha:0,scale:.99,duration:.55,ease:'power2.inOut'},.12)
+   .set(s.sec,{visibility:'hidden'})
+   .set([s.base,...s.bg,...s.eye,...s.desc,...s.arrow,...s.title],{clearProps:'all'});
+}
+function go(to){
+  if(to<0||to>=SLIDES.length||to===idx)return;
+  if(tl&&tl.isActive())tl.progress(1);
+  const dir=to>idx?1:-1,from=idx;
+  meta(to);idx=to;
+  if(reduce){
+    if(from>=0)gsap.set(S[from].sec,{visibility:'hidden'});
+    gsap.set(S[to].sec,{visibility:'visible'});gsap.fromTo(S[to].sec,{autoAlpha:0},{autoAlpha:1,duration:.3});return;
+  }
+  tl=gsap.timeline();
+  let at=0;
+  if(from>=0){leave(S[from],dir,tl);at=.38;}
+  enter(S[to],dir,at,tl);
+}
+
+const h=parseInt((location.hash||'').replace('#s',''),10);
+go(h>=1&&h<=SLIDES.length?h-1:0);
+
+$('next').onclick=()=>go(idx+1);$('prev').onclick=()=>go(idx-1);
+stage.addEventListener('click',e=>{const r=stage.getBoundingClientRect();go(e.clientX-r.left<r.width*.3?idx-1:idx+1)});
+let sx=null;
+stage.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
+stage.addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)go(dx<0?idx+1:idx-1);sx=null},{passive:true});
+
+const grid=$('grid'),list=$('gridList');
+SLIDES.forEach((s,i)=>{const b=document.createElement('button');b.className='thumb';b.type='button';
+  b.innerHTML=`<img alt="" src="${s.thumb}"><span><em>${pad(i+1)}</em>${s.t}</span>`;
+  b.onclick=()=>{closeGrid();setTimeout(()=>go(i),reduce?0:200)};list.appendChild(b);});
+function openGrid(){grid.hidden=false;document.querySelectorAll('.thumb').forEach((t,k)=>t.classList.toggle('on',k===idx));
+  if(!reduce)gsap.from('.thumb',{y:16,autoAlpha:0,stagger:.03,duration:.45,ease:'power3.out'});list.children[idx]?.focus()}
+function closeGrid(){grid.hidden=true;stage.focus()}
+$('gridBtn').onclick=openGrid;$('gridClose').onclick=closeGrid;
+$('fsBtn').onclick=()=>{if(document.fullscreenElement){document.exitFullscreen?.().catch(()=>{})}else{document.documentElement.requestFullscreen?.().catch(()=>{})}};
+
+addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key;
+  if(!grid.hidden){if(k==='Escape'||k==='g'||k==='G'){e.preventDefault();closeGrid()}return}
+  if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(k)){e.preventDefault();go(idx+1)}
+  else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(k)){e.preventDefault();go(idx-1)}
+  else if(k==='Home')go(0);else if(k==='End')go(SLIDES.length-1);
+  else if(k==='g'||k==='G')openGrid();else if(k==='f'||k==='F')$('fsBtn').click();
+});
+</script>
+
+</body>
+</html>
